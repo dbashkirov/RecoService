@@ -1,4 +1,5 @@
 from typing import List
+import random
 
 from fastapi import APIRouter, FastAPI, Request
 from pydantic import BaseModel
@@ -36,12 +37,13 @@ async def get_reco(
     app_logger.info(f"Request for model: {model_name}, user_id: {user_id}")
 
     # Write your code here
+    k_recs = request.app.state.k_recs
+    if model_name == "random":
+        reco = random.sample(range(1000), k_recs)
 
     if user_id > 10**9:
         raise UserNotFoundError(error_message=f"User {user_id} not found")
 
-    k_recs = request.app.state.k_recs
-    reco = list(range(k_recs))
     return RecoResponse(user_id=user_id, items=reco)
 
 
