@@ -1,11 +1,12 @@
 import os
 import random
-from typing import Annotated, List
+from typing import List
 
 from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, FastAPI, Request
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
+from typing_extensions import Annotated
 
 from service.api.exceptions import AuthenticationError, ModelNotFoundError, UserNotFoundError
 from service.log import app_logger
