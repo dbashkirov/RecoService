@@ -1,5 +1,5 @@
-from typing import List
 import random
+from typing import List
 
 from fastapi import APIRouter, FastAPI, Request
 from pydantic import BaseModel
