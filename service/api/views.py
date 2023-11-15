@@ -38,6 +38,7 @@ async def get_reco(
 
     # Write your code here
     k_recs = request.app.state.k_recs
+    reco = list(range(k_recs))
     if model_name == "random":
         reco = random.sample(range(1000), k_recs)
 
