@@ -1,10 +1,13 @@
+import os
 import random
-from typing import List
+from typing import Annotated, List
 
-from fastapi import APIRouter, FastAPI, Request
+from dotenv import load_dotenv
+from fastapi import APIRouter, Depends, FastAPI, Request
+from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
 
-from service.api.exceptions import UserNotFoundError
+from service.api.exceptions import AuthenticationError, ModelNotFoundError, UserNotFoundError
 from service.log import app_logger
 
 
@@ -13,7 +16,17 @@ class RecoResponse(BaseModel):
     items: List[int]
 
 
+load_dotenv()
 router = APIRouter()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+
+def login(req: Request):
+    token = req.headers["Authorization"]
+    if token != "Bearer " + os.getenv("TOKEN"):
+        raise AuthenticationError(error_message="Invalid token")
+
+    return token
 
 
 @router.get(
@@ -30,9 +43,7 @@ async def health() -> str:
     response_model=RecoResponse,
 )
 async def get_reco(
-    request: Request,
-    model_name: str,
-    user_id: int,
+    request: Request, model_name: str, user_id: int, token: Annotated[str, Depends(login)]
 ) -> RecoResponse:
     app_logger.info(f"Request for model: {model_name}, user_id: {user_id}")
 
@@ -41,6 +52,8 @@ async def get_reco(
     reco = list(range(k_recs))
     if model_name == "random":
         reco = random.sample(range(1000), k_recs)
+    else:
+        raise ModelNotFoundError(error_message=f"Model {model_name} not found")
 
     if user_id > 10**9:
         raise UserNotFoundError(error_message=f"User {user_id} not found")
