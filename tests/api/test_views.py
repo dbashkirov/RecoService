@@ -35,7 +35,7 @@ def test_get_reco_success(
     user_id = 123
     path = GET_RECO_PATH.format(model_name="random", user_id=user_id)
     with client:
-        response = client.get(path, headers={"Authorization": "Bearer " + os.getenv("TOKEN")})
+        response = client.get(path, headers={"Authorization": "Bearer " + str(os.getenv("TOKEN"))})
     assert response.status_code == HTTPStatus.OK
     response_json = response.json()
     assert response_json["user_id"] == user_id
@@ -49,7 +49,7 @@ def test_get_reco_for_unknown_user(
     user_id = 10**10
     path = GET_RECO_PATH.format(model_name="random", user_id=user_id)
     with client:
-        response = client.get(path, headers={"Authorization": "Bearer " + os.getenv("TOKEN")})
+        response = client.get(path, headers={"Authorization": "Bearer " + str(os.getenv("TOKEN"))})
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json()["errors"][0]["error_key"] == "user_not_found"
 
@@ -61,7 +61,7 @@ def test_get_reco_for_unknown_model(
     user_id = 1
     path = GET_RECO_PATH.format(model_name=model_name, user_id=user_id)
     with client:
-        response = client.get(path, headers={"Authorization": "Bearer " + os.getenv("TOKEN")})
+        response = client.get(path, headers={"Authorization": "Bearer " + str(os.getenv("TOKEN"))})
     print(response.json())
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json()["errors"][0]["error_key"] == "model_not_found"

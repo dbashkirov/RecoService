@@ -24,7 +24,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 def login(req: Request):
     token = req.headers["Authorization"]
-    if token != "Bearer " + os.getenv("TOKEN"):
+    if token != "Bearer " + str(os.getenv("TOKEN")):
         raise AuthenticationError(error_message="Invalid token")
 
     return token
