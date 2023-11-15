@@ -1,5 +1,4 @@
 import os
-from dotenv import load_dotenv
 import uvicorn
 
 from service.api.app import create_app
@@ -11,8 +10,7 @@ app = create_app(config)
 
 if __name__ == "__main__":
 
-    load_dotenv()
-    host = os.getenv("HOST", "localhost")
+    host = os.getenv("HOST", "127.0.0.1")
     port = int(os.getenv("PORT", "8080"))
 
     uvicorn.run(app, host=host, port=port)
