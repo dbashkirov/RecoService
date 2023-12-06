@@ -22,7 +22,7 @@ class RecoResponse(BaseModel):
 load_dotenv()
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-recs = pd.read_csv("files/recos.csv")
+recs = pd.read_csv("files/empty_recos.csv")
 users = recs.user_id.values
 items = recs.item_id.values
 pop_recs = pd.read_csv("files/pop_recos.csv").values
