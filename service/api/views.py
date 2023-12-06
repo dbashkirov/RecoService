@@ -1,15 +1,13 @@
 import os
-import pickle
 import random
 from typing import List
 
+import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, FastAPI, Request
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
-from rectools import Columns
-from rectools.dataset import Dataset
 from typing_extensions import Annotated
 
 from service.api.exceptions import AuthenticationError, ModelNotFoundError, UserNotFoundError
@@ -24,9 +22,10 @@ class RecoResponse(BaseModel):
 load_dotenv()
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-interactions_df = pd.read_csv("data_original/interactions.csv")
-interactions_df.rename(columns={"last_watch_dt": Columns.Datetime, "total_dur": Columns.Weight}, inplace=True)
-dataset = Dataset.construct(interactions_df)
+recs = pd.read_csv("files/recos.csv")
+users = recs.user_id.values
+items = recs.item_id.values
+pop_recs = pd.read_csv("files/pop_recos.csv").values
 
 
 def login(req: Request):
@@ -63,17 +62,13 @@ async def get_reco(
     reco = list(range(k_recs))
     if model_name == "random":
         reco = random.sample(range(1000), k_recs)
+    elif model_name == "popular":
+        pass
     elif model_name == "knn":
-        with open("src/weights/knn_weights.pkl", "rb") as f:
-            model = pickle.load(f)
-
-        recs = model.recommend(
-            users=[user_id],
-            dataset=dataset,
-            k=k_recs,
-            filter_viewed=True,
-        )
-        reco = list(recs["item_id"])
+        knn_recs = items[np.where(users == user_id)]
+        reco = list(knn_recs)
+        if len(reco) == 0:
+            reco = list(pop_recs[:, 1])
     else:
         raise ModelNotFoundError(error_message=f"Model {model_name} not found")
 
