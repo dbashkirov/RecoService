@@ -2,6 +2,8 @@ import os
 import random
 from typing import List
 
+import numpy as np
+import pandas as pd
 from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, FastAPI, Request
 from fastapi.security import OAuth2PasswordBearer
@@ -20,6 +22,10 @@ class RecoResponse(BaseModel):
 load_dotenv()
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+recs = pd.read_csv("files/pop_recos.csv")  # change to knn recos
+users = recs.user_id.values
+items = recs.item_id.values
+pop_recs = pd.read_csv("files/pop_recos.csv").values
 
 
 def login(req: Request):
@@ -44,7 +50,10 @@ async def health() -> str:
     response_model=RecoResponse,
 )
 async def get_reco(
-    request: Request, model_name: str, user_id: int, token: Annotated[str, Depends(login)]
+    request: Request,
+    model_name: str,
+    user_id: int,
+    token: Annotated[str, Depends(login)],
 ) -> RecoResponse:
     app_logger.info(f"Request for model: {model_name}, user_id: {user_id}")
 
@@ -53,6 +62,13 @@ async def get_reco(
     reco = list(range(k_recs))
     if model_name == "random":
         reco = random.sample(range(1000), k_recs)
+    elif model_name == "popular":
+        pass
+    elif model_name == "knn":
+        knn_recs = items[np.where(users == user_id)]
+        reco = list(knn_recs)
+        if len(reco) == 0:
+            reco = list(pop_recs[:, 1])
     else:
         raise ModelNotFoundError(error_message=f"Model {model_name} not found")
 
