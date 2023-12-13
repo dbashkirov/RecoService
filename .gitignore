@@ -69,3 +69,4 @@ venv.bak/
 data_original/
 data_original.zip
 files/recos.csv
+files/fm_recos.npy

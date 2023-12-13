@@ -22,9 +22,8 @@ class RecoResponse(BaseModel):
 load_dotenv()
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-recs = pd.read_csv("files/pop_recos.csv")  # change to knn recos
-users = recs.user_id.values
-items = recs.item_id.values
+knn_recs = pd.read_csv("files/pop_recos.csv")  #
+fm_recs = np.load("files/pop_recos.csv")
 pop_recs = pd.read_csv("files/pop_recos.csv").values
 
 
@@ -65,9 +64,14 @@ async def get_reco(
     elif model_name == "popular":
         pass
     elif model_name == "knn":
-        knn_recs = items[np.where(users == user_id)]
-        reco = list(knn_recs)
-        if len(reco) == 0:
+        recs = knn_recs[user_id * 10: (user_id + 1) * 10]
+        reco = list(recs)
+        if reco[0] == -1:
+            reco = list(pop_recs[:, 1])
+    elif model_name == "fm":
+        recs = fm_recs[user_id * 10: (user_id + 1) * 10]
+        reco = list(recs)
+        if reco[0] == -1:
             reco = list(pop_recs[:, 1])
     else:
         raise ModelNotFoundError(error_message=f"Model {model_name} not found")
