@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, FastAPI, Request
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
 from typing_extensions import Annotated
+from src import DSSMModel
 
 from service.api.exceptions import AuthenticationError, ModelNotFoundError, UserNotFoundError
 from service.log import app_logger
@@ -22,9 +23,8 @@ class RecoResponse(BaseModel):
 load_dotenv()
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-recs = pd.read_csv("files/pop_recos.csv")  # change to knn recos
-users = recs.user_id.values
-items = recs.item_id.values
+fm_recs = np.load("als_recos.npy")
+dssm_model = DSSMModel()
 pop_recs = pd.read_csv("files/pop_recos.csv").values
 
 
@@ -67,6 +67,10 @@ async def get_reco(
     elif model_name == "knn":
         knn_recs = items[np.where(users == user_id)]
         reco = list(knn_recs)
+        if len(reco) == 0:
+            reco = list(pop_recs[:, 1])
+    elif model_name == "dssm":
+        reco = dssm_model.recommend(user_id)
         if len(reco) == 0:
             reco = list(pop_recs[:, 1])
     else:
