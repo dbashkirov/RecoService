@@ -12,6 +12,7 @@ from typing_extensions import Annotated
 
 from service.api.exceptions import AuthenticationError, ModelNotFoundError, UserNotFoundError
 from service.log import app_logger
+from src import DSSMModel
 
 
 class RecoResponse(BaseModel):
@@ -22,9 +23,9 @@ class RecoResponse(BaseModel):
 load_dotenv()
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-recs = pd.read_csv("files/pop_recos.csv")  # change to knn recos
-users = recs.user_id.values
-items = recs.item_id.values
+fm_recs = np.load("files/empty_recos.npy")
+knn_recs = np.load("files/empty_recos.npy")
+dssm_model = DSSMModel()
 pop_recs = pd.read_csv("files/pop_recos.csv").values
 
 
@@ -62,11 +63,18 @@ async def get_reco(
     reco = list(range(k_recs))
     if model_name == "random":
         reco = random.sample(range(1000), k_recs)
-    elif model_name == "popular":
-        pass
     elif model_name == "knn":
-        knn_recs = items[np.where(users == user_id)]
-        reco = list(knn_recs)
+        recs = knn_recs[user_id * 10: (user_id + 1) * 10]
+        reco = list(recs)
+        if len(reco) == 0:
+            reco = list(pop_recs[:, 1])
+    elif model_name == "fm":
+        recs = fm_recs[user_id * 10: (user_id + 1) * 10]
+        reco = list(recs)
+        if len(reco) == 0:
+            reco = list(pop_recs[:, 1])
+    elif model_name == "dssm":
+        reco = dssm_model.recommend(user_id)
         if len(reco) == 0:
             reco = list(pop_recs[:, 1])
     else:
