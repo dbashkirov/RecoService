@@ -63,8 +63,6 @@ async def get_reco(
     reco = list(range(k_recs))
     if model_name == "random":
         reco = random.sample(range(1000), k_recs)
-    elif model_name == "popular":
-        pass
     elif model_name == "knn":
         recs = knn_recs[user_id * 10: (user_id + 1) * 10]
         reco = list(recs)
