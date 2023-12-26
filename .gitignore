@@ -66,6 +66,15 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# temp
 data_original/
 data_original.zip
 files/recos.csv
+notebooks/log
+notebooks/log_tensorboard
+notebooks/recbox_data
+notebooks/recsys_resnet_linear
+notebooks/runs
+notebooks/saved
+notebooks/AutoEncoder_checkpoint.pt
