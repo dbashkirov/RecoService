@@ -27,6 +27,8 @@ black = {extras = ["jupyter"], version = "^23.11.0"}
 hyperopt = "^0.2.7"
 optuna = "^3.5.0"
 nmslib = "^2.1.1"
+shap = "^0.44.0"
+implicit = "^0.7.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "7.4.3"

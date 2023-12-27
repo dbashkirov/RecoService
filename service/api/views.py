@@ -12,6 +12,7 @@ from typing_extensions import Annotated
 
 from service.api.exceptions import AuthenticationError, ModelNotFoundError, UserNotFoundError
 from service.log import app_logger
+from src import Ranker
 
 
 class RecoResponse(BaseModel):
@@ -25,6 +26,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 knn_recs = np.load("files/empty_recos.npy")
 fm_recs = np.load("files/empty_recos.npy")
 pop_recs = pd.read_csv("files/pop_recos.csv").values
+rank_model = Ranker()
 
 
 def login(req: Request):
@@ -72,6 +74,10 @@ async def get_reco(
         recs = fm_recs[user_id * 10: (user_id + 1) * 10]
         reco = list(recs)
         if reco[0] == -1:
+            reco = list(pop_recs[:, 1])
+    elif model_name == "ranking":
+        recs = rank_model.recommend(user_id)
+        if len(recs) == 0:
             reco = list(pop_recs[:, 1])
     else:
         raise ModelNotFoundError(error_message=f"Model {model_name} not found")
